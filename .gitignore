@@ -1,0 +1,7 @@
+# Project exclude paths
+/elasticsearch-relative-service/target/
+/eureka-server-zone/target/
+/eureka-service-consumer/target/
+/eureka-service-provider/target/
+/redis-relative-service/target/
+/springcloud-config-server/target/
