@@ -5,6 +5,7 @@ import com.daddy.vo.JunkViewObject;
 import com.daddy.vo.ViewObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,12 @@ import java.util.Map;
 public class ConsumerController {
     @Autowired
     RestTemplate restTemplate;
+    @Value("${name}")
+    private String name;
+    @GetMapping(value = "/getConfig")
+    public String testConfig(){
+        return name;
+    }
 
     @GetMapping(value = "/consumer/test1")
     public String invokeRemoteMethod() {
