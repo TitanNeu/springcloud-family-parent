@@ -31,4 +31,8 @@ public class ServiceProviderController {
         return viewObject;
     }
 
+    @GetMapping(value = "/proxy/test1")
+    public String testProxy() {
+        return "invoke remote method by gateway server success";
+    }
 }
