@@ -8,6 +8,6 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 @EnableEurekaClient
 public class BigDataApplication {
     public static void main(String[] args) {
-
+        SpringApplication.run(BigDataApplication.class, args);
     }
 }
