@@ -178,4 +178,8 @@ public class RedisTest {
         }
 
     }
+    @Test
+    public void testLuaScript() {
+
+    }
 }

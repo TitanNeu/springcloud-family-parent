@@ -7,12 +7,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @ClassName RedisSimpleController
@@ -25,7 +30,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class RedisSimpleController {
     private static final Logger logger = LoggerFactory.getLogger(RedisSimpleController.class);
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
@@ -76,6 +81,38 @@ public class RedisSimpleController {
 
         System.out.println("单线程" + (end - start) + "ms");
 
+
+    }
+    private static final String lock = "lock";
+    private static final String num = "num";
+    private static final String delLockLua = "local lock = KEYS[1]\n" +
+            "local lockVal = ARGV[1]\n" +
+            "if redis.call('get',lock) == lockVal then\n" +
+            "    redis.call('del',lock)\n" +
+            "else\n" +
+            "    return 0\n" +
+            "end";
+    //测试lua脚本和分布式锁
+    @GetMapping(value = "/redis/testlua")
+    public void testLua() {
+        String uuid = UUID.randomUUID().toString();
+        //尝试设置锁
+        Boolean flag = redisTemplate.opsForValue().setIfAbsent(lock, uuid, 3, TimeUnit.SECONDS);
+        DefaultRedisScript<Long> delLockScript = new DefaultRedisScript<>();
+        delLockScript.setScriptText(delLockLua);
+        delLockScript.setResultType(Long.class);
+
+        if(Boolean.TRUE.equals(flag)) { //获得了锁
+            redisTemplate.opsForValue().increment(num);
+            redisTemplate.execute(delLockScript, Collections.singletonList(lock), uuid);
+        }else{
+            try {
+                Thread.sleep(100);
+                testLua();
+            } catch (InterruptedException e) {
+                logger.error("sleep error",e);
+            }
+        }
 
     }
 }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.DefaultBaseTypeLimitingValidator;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,7 @@ import java.time.Duration;
  **/
 @Configuration
 @EnableCaching
-public class RedisConfig {
+public class RedisConfig extends CachingConfigurerSupport {
 
     /**
      * 配置缓存管理器
@@ -68,12 +69,13 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        RedisSerializer<String> stringRedisSerializer = new StringRedisSerializer();
 
         // 使用Jackson2JsonRedisSerialize 替换默认序列化
         Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
@@ -82,9 +84,9 @@ public class RedisConfig {
         jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
 
         // 设置value的序列化规则和 key的序列化规则
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setKeySerializer(stringRedisSerializer);
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashKeySerializer(stringRedisSerializer);
         redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
