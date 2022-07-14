@@ -42,7 +42,7 @@ public class ElasticIndexController {
             boolean acknowledged = createIndexResponse.isAcknowledged();
             System.out.println(acknowledged);
             //如果是spring创建的bean不需要关闭，关闭就没了
-            client.close();
+//            client.close();
         } catch (IOException e) {
             log.error("create index error", e);
         }

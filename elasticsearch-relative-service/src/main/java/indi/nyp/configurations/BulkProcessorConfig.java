@@ -2,6 +2,7 @@ package indi.nyp.configurations;
 
 import indi.nyp.properties.BulkProcessorProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -15,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 @Configuration(proxyBeanMethods = false)
 @Slf4j
@@ -50,15 +54,25 @@ public class BulkProcessorConfig {
 
         };
 
+        /**7.13.1的写法*/
         BulkProcessor.Builder builder = BulkProcessor.builder(
                 (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener),
                 listener, properties.getBulkProcessorName());
-
         builder.setBulkActions(properties.getBulkActions());
         builder.setBulkSize(new ByteSizeValue(properties.getBulkSize(), ByteSizeUnit.MB));
         builder.setConcurrentRequests(properties.getConcurrentRequests());
         builder.setFlushInterval(TimeValue.timeValueSeconds(properties.getFlushInterval()));
-        builder.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(properties.getTimeValueSeconds()), properties.getMaxNumberOfRetries()));
+        builder.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(properties.getRetryInterval()), properties.getMaxNumberOfRetries()));
+
+        /**7.10.0的写法*/
+//        BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer =
+//                (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
+//        BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener)
+//                .setBulkActions(properties.getBulkActions())
+//                .setBulkSize(new ByteSizeValue(properties.getBulkSize(), ByteSizeUnit.MB))
+//                .setConcurrentRequests(properties.getConcurrentRequests())
+//                .setFlushInterval(TimeValue.timeValueSeconds(properties.getFlushInterval()))
+//                .setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(properties.getRetryInterval()), properties.getMaxNumberOfRetries()));
 
         return builder.build();
 

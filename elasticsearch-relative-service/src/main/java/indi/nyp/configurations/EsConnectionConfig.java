@@ -1,6 +1,7 @@
 package indi.nyp.configurations;
 
 import indi.nyp.properties.ElasticsearchProperties;
+import indi.nyp.properties.ElasticsearchProperties2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
@@ -32,7 +33,7 @@ import java.util.Arrays;
 @Configuration
 public class EsConnectionConfig {
     @Autowired
-    ElasticsearchProperties properties;
+    ElasticsearchProperties2 properties;
 
     @Bean(value = "dick es client")
     public RestHighLevelClient getClient() {
@@ -55,7 +56,7 @@ public class EsConnectionConfig {
     }
 
     //构建builder
-    private RestHighLevelClient getRestHighLevelClient(RestClientBuilder builder, ElasticsearchProperties elasticsearchProperties) {
+    private RestHighLevelClient getRestHighLevelClient(RestClientBuilder builder, ElasticsearchProperties2 elasticsearchProperties) {
 
         // Callback used the default {@link RequestConfig} being set to the {@link CloseableHttpClient}
         builder.setRequestConfigCallback(requestConfigBuilder -> {
