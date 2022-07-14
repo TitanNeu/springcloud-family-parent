@@ -16,6 +16,7 @@ public class GatewayServer {
 
     @Bean
     RouteLocator routeModel(RouteLocatorBuilder builder) {
+        //forward "(gateway eureka service name)/proxy/test1" to EUREKA-CLIENT-USER-SERVICE/proxy/test1
         return builder.routes().route("route-test", r->r.path("/proxy/test1")
                 .uri("lb://EUREKA-CLIENT-USER-SERVICE")).build();
     }
